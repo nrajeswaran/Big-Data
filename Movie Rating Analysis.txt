@@ -1,0 +1,60 @@
+
+
+>>> sc = spark.sparkContext
+>>> ratings = sc.textFile("file:///Users/nandinirajeswaran/Applications/spark-2.2.0-bin-hadoop2.7/ratings.txt")
+>>> ratings.take(3)
+[u'1::122::5::838985046', u'1::185::5::838983525', u'1::231::5::838983392']
+>>> ratings.count()
+10000054
+>>> def getUserID(rec):
+...     tokens = rec.split("::")
+...     return tokens[0]
+...
+>>> users = ratings.map(lambda x : (getUserID(x),1))
+>>> users.count()
+10000054
+>>> uniqueusers = users.reduceByKey(lambda x,y: 1)
+>>> uniqueusers.count()
+69878
+>>> def getMovieID(rec):
+...     tokens = rec.split("::")
+...     return tokens[1]
+...
+>>> movies = ratings.map(lambda x : (getMovieID(x),1))
+>>> movies.count()
+10000054
+>>> uniquemovies = movies.reduceByKey(lambda x,y: 1)
+>>> uniquemovies.count()
+10677
+>>> def average(rec):
+...     tokens = rec.split("::")
+...     return (tokens[1],tokens[2])
+...
+>>> avgrate = ratings.map(lambda x : (average(x),1))
+>>> avgrate = ratings.map(lambda x : (average(x))
+... )
+>>> avgrate.take(3)
+[(u'122', u'5'), (u'185', u'5'), (u'231', u'5')]
+>>> avgrate1 = avgrate.map(lambda(x,y) : (x,(float(y))))
+>>> avgrate1.take(3)
+[(u'122', 5.0), (u'185', 5.0), (u'231', 5.0)]
+>>> avgrate2 = avgrate1.reduceByKey(lambda x,y:(x+y))
+>>> avgrate2.take(3)
+[(u'27491', 166.0), (u'8255', 61.0), (u'6341', 730.0)]
+>>> ratemovie  = movies.reduceByKey(lambda x, y : x+y)
+>>> ratemovie.take(3)
+[(u'27491', 50), (u'8255', 19), (u'6341', 207)]
+>>> avgrate4 = avgrate2.map(lambda x:(x[0],x[1])).join(ratemovie.map(lambda x:(x[0],(x[1]))))
+>>> avgrate4.take(3)
+[Stage 16:>                                                        (0 + 0) / 16]/Users/nandinirajeswaran/Applications/spark-2.2.0-bin-hadoop2.7/python/lib/pyspark.zip/pyspark/shuffle.py:58: UserWarning: Please install psutil to have better support with spilling
+[(u'27491', (166.0, 50)), (u'1142', (121.0, 38)), (u'6341', (730.0, 207))]
+>>> avgrate6 = avgrate4.map(lambda(x,y): (x,((y[0])/(y[1]))))
+>>> avgrate6.take(3)
+[(u'27491', 3.3199999999999998), (u'1142', 3.1842105263157894), (u'6341', 3.5265700483091789)]
+>>> avgratemovie  = avgrate6.filter (lambda x : ((x[0]=="377") or (x[0]=="477") or (x[0]=="977")))
+>>> avgratemovie.collect()
+[(u'977', 2.2999999999999998), (u'477', 3.5415647921760391), (u'377', 3.5289498062994777)]
+>>> avgratemovie.saveAsTextFile("/Users/nandinirajeswaran/My Documents/Nandini/Fall17/Big_Data/3AverageMovieRate.txt")
+[Stage 29:>                                                        (0 + 0) / 16]/Users/nandinirajeswaran/Applications/spark-2.2.0-bin-hadoop2.7/python/lib/pyspark.zip/pyspark/shuffle.py:58: UserWarning: Please install psutil to have better support with spilling
+>>> avgrate6.saveAsTextFile("/Users/nandinirajeswaran/My Documents/Nandini/Fall17/Big_Data/AllAverageMovieRate.txt")
+>>>
