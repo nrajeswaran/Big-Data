@@ -1,0 +1,126 @@
+Big Data Assignment-1: 
+Nandini Rajeswaran - W1351723
+
+Input for mapper 
+=========================
+BK00,Intro to Programming,cs,programming
+BK01,Intro to Python,cs,algorithms
+BK02,Intro to Java,cs,algorithms
+BK03,Intro to Economics,business,algorithms
+BK04,Intro to Economics2,business,cs
+BK05,Advanced Java,cs,algorithms
+BK06,Advanced Java2,cs,algorithms
+BK07,Advanced Economics,cs,marketing
+BK08,Advanced Java3,cs,java
+BK09,Advanced Economics,sales,marketing
+BK10,Advanced Economics3,algorithms,cs
+BK11,Advanced Economics4,business,sales
+BK12,Advanced Programming,business,programming
+
+Map Function:
+=========================
+map(key, value){
+	//key : record number(1)
+	//value : Content of the record (“BK00,Intro to Programming,cs,programming”)
+
+	String[] tokens = value.split(“,”)
+	//token[0] = isbn
+	//token[1] = name
+	//token[2] = category1
+	//token[3] = category2
+
+	emit(“Books” , 1)
+	emit(“category” , token[2])  
+	emit(token[2] , 1)
+	emit(“category” , token[3])  
+	emit(token[3] , 1)
+}
+
+Mapper  Output
+=========================
+
+(“Books”,1)                               (“Books”,1)			 (“Books”,1)			   (“Books”,1)			(“Books”,1)			 (“Books”,1)			    
+(“category”,”cs”)                       (“category”,”cs”)		 (“category”,”cs”)		   (“category”,”business”)		(“category”,”business”)     (“category”,”cs”) 		    
+(“cs”,1)                                     (“cs”,1)				 (“cs”,1)			   (“business”,1)			(“business”,1)		 (“cs”,1)			    
+(“category”,”programming”)     (“category”,”algorithms”)     (“category”,”algorithms”)    (“category”,”algorithms”)         (“category”,”cs”)		 (“category”,”algorithms”)    
+(“programming”,1)                   (“algorithms”,1)		 (“algorithms”,1)		   (“algorithms”,1)			(“cs”,1)			 (“algorithms”,1)	    	    
+
+(“Books”,1)                               (“Books”,1) 			 (“Books”,1)			   (“Books”,1)			(“Books”,1)			  (“Books”,1)				(“Books”,1)
+(“category”,”cs”) 		        (“category”,”cs”)		 (“category”,”cs”)		   (“category”,”sales”)		(“category”,”algorithms”)    (“category”,”business”)		(“category”,”business”)
+(“cs”,1)			        (“cs”,1)			 	 (“cs”,1)			   (“sales”,1)				(“algorithms”,1)		  (“business”,1)			(“business”,1)
+(“category”,”algorithms”)          (“category”,”marketing”)	 (“category”,”java”)		   (“category”,”marketing”)	(“category”,”cs”)		  (“category”,”sales”)		(“category”,”programming”)
+(“algorithms”,1)		        (“marketing”,1)		 (“java”,1)			   (“marketing”,1)			(“cs”,1)			  (“sales”,1)				(“programming”,1)
+
+
+Sort & Shuffle Output (Reducer Input)
+===================================
+
+(“Books”,[1,1,1,1,1,1,1,1,1,1,1,1,1])
+(“cs”,[1,1,1,1,1,1,1,1,1])
+(”programming”,[1,1])
+(“algorithms”,[1,1,1,1,1,1])
+(“business”,[1,1,1,1])
+(“marketing”,[1,1])
+(“Java”,[1])
+(“sales”,[1,1])
+(“Category”,[“cs”,”programming”,”cs”,”algorithms”,”cs”,”algorithms”,”business”,”algorithms”,”business”,”cs””,
+		”cs”,”algorithms”,”cs”,”algorithms”,”cs”,”marketing”,”cs”,”java”,”sales”,”marketing”,”algorithms”,”cs”,”business”,”sales”,”business”,”programming”)])
+
+Reduce Function:
+=========================
+
+reduce(key,values){
+	//key = String
+	//values = Iterable<Object> 
+	
+	if(key == “category”){
+		values = ExcludeDuplicates(values);  
+		string category;
+		int count;
+		for(string list : values){
+			category = list
+			count++;
+		} 
+		emit(“Unique_Category”,category)
+		emit(“Unique_Category”,count)
+	else{
+		int total =0;
+		for(integer i : values){
+		total = total + i;
+		} emit(key, total);
+	}
+		sort values
+		truncate values to top 3
+		for values in total{
+			emit(key, total)
+		}
+	}
+}
+	
+Reduce Output:
+=========================	
+
+(“Unique_Category”,[“cs”,”programming”,”algorithms”,”business”,”marketing”,”java”,”sales”])
+(“Unique_Category”,7)
+
+Total number of books: 
+(“Books”,13)
+(“cs”,9)
+(”programming”,2)
+(“algorithms”,6)
+(“business”,4)
+(“marketing”,2)
+(“Java”,1)
+(“Sales”,2)
+
+Top2 Categories:
+(“Book”,13)
+(“cs”,9)
+(“algorithms”,6)
+
+Reference:
+=========================
+
+https://highlyscalable.wordpress.com/2012/02/01/mapreduce-patterns/. (For duplicate removal)
+https://acadgild.com/blog/mapreduce-design-pattern-finding-top-k-records/ (For finding top2)
+
